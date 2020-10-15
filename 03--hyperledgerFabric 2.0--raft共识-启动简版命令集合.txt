@@ -1,0 +1,50 @@
+- GODEBUG=netdns=go
+
+export COMPOSE_PROJECT_NAME=net
+
+3.1启动TLS CA服务器
+cd /tmp/hyperledger/docker-compose/fabric-ca-tls
+docker-compose up -d
+
+3.2配置Org0的CA服务
+cd /tmp/hyperledger/docker-compose/org0/ca
+docker-compose up -d
+3.3配置Org1的CA服务
+cd /tmp/hyperledger/docker-compose/org1/ca
+docker-compose up -d
+3.4配置Org2的CA服务
+cd /tmp/hyperledger/docker-compose/org2/ca
+docker-compose up -d
+
+4、组织二（org2）-->节点配置
+4.5 启动peer1节点
+cd /tmp/hyperledger/docker-compose/org1/peer1
+docker-compose up -d
+
+4.6启动peer2节点
+cd /tmp/hyperledger/docker-compose/org1/peer2
+docker-compose up -d
+
+
+5、组织二（org2）-->节点配置
+5.5 启动peer1节点
+cd /tmp/hyperledger/docker-compose/org2/peer1
+docker-compose up -d
+
+5.6启动peer2节点
+cd /tmp/hyperledger/docker-compose/org2/peer2
+docker-compose up -d
+
+7.4启动orderer节点
+cd /tmp/hyperledger/docker-compose/org0/orderer
+docker-compose up -d
+
+
+7.5启动组织一的cli
+cd /tmp/hyperledger/docker-compose/org1/cli
+docker-compose up -d
+
+7.6启动组织二的cli
+cd /tmp/hyperledger/docker-compose/org2/cli
+docker-compose up -d
+docker-compose down -v
