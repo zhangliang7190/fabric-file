@@ -1,0 +1,273 @@
+#进入CLI容器
+docker exec -it cli bash
+#配置环境变量
+export CHANNEL_NAME=mychannel
+export ORDERER_CA=${PWD}/crypto/orderOrganization/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export PEER0_ORG1_CA=${PWD}/crypto/peerOrganization/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+
+
+#配置环境变量
+export CHANNEL_NAME=mychannel
+export ORDERER_CA=${PWD}/crypto/orderOrganizations/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export PEER0_ORG1_CA=${PWD}/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+
+1.2 注册Orderer节点
+首先配置环境变量并登陆管理员账号:
+#创建存储Order节点证书的子文件夹。
+mkdir -p crypto-config/orderOrganization/example.com
+export FABRIC_CA_CLIENT_HOME=${PWD}/crypto-config/orderOrganization/example.com
+fabric-ca-client enroll -u https://admin:adminpw@localhost:9054 --caname ca-orderer --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+
+
+
+
+
+echo 'NodeOUs:
+  Enable: true
+  ClientOUIdentifier:
+    Certificate: cacerts/localhost-9054-ca-orderer.pem
+    OrganizationalUnitIdentifier: client
+  PeerOUIdentifier:
+    Certificate: cacerts/localhost-9054-ca-orderer.pem
+    OrganizationalUnitIdentifier: peer
+  AdminOUIdentifier:
+    Certificate: cacerts/localhost-9054-ca-orderer.pem
+    OrganizationalUnitIdentifier: admin
+  OrdererOUIdentifier:
+    Certificate: cacerts/localhost-9054-ca-orderer.pem
+    OrganizationalUnitIdentifier: orderer' > ${PWD}/crypto-config/orderOrganization/example.com/msp/config.yaml
+
+
+fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer1 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer2 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer3 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer4 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+
+1.3 获取Orderer证书文件
+然后为每一个节点的TLS证书以及秘钥文件修改名字，方便之后的使用:
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/signcerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/server.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/keystore/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/server.key
+
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/signcerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/server.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/keystore/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/server.key
+
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/signcerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/server.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/keystore/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/server.key
+
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/signcerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/server.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/keystore/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/server.key
+
+然后在MSP文件夹内创建tlscacerts文件夹，并将TLS文件拷贝过去:
+mkdir ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/msp/tlscacerts
+mkdir ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/msp/tlscacerts
+mkdir ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/msp/tlscacerts
+mkdir ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/msp/tlscacerts
+
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer2.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer3.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer4.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+复制TLS根证书:
+mkdir -p ${PWD}/crypto-config/orderOrganization/example.com/msp/tlscacerts
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+最后是Admin节点的证书文件:
+#首先也是创建文件夹
+mkdir -p crypto-config/orderOrganization/example.com/users
+mkdir -p crypto-config/orderOrganization/example.com/users/Admin@example.com
+#获取证书文件
+fabric-ca-client enroll -u https://ordererAdmin:ordererAdminpw@localhost:9054 --caname ca-orderer -M ${PWD}/crypto-config/orderOrganization/example.com/users/Admin@example.com/msp --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+cp ${PWD}/crypto-config/orderOrganization/example.com/msp/config.yaml ${PWD}/crypto-config/orderOrganization/example.com/users/Admin@example.com/msp/config.yaml
+
+到这里Orderer节点证书已经生成完毕(可以根据实际需要修改Orderer节点数量，最少不能低于3个)，接下来是网络中唯一的peer节点的配置文件生成:
+
+
+1.4 注册Peer节点
+和上面步骤相同，首先创建子文件夹用于存储证书文件:
+mkdir -p crypto-config/peerOrganizations/org1.example.com/
+配置环境变量并登陆管理员身份:
+export FABRIC_CA_CLIENT_HOME=${PWD}/crypto-config/peerOrganizations/org1.example.com/
+fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --caname ca-org1 --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+生成节点类型分类配置文件:
+echo 'NodeOUs:
+  Enable: true
+  ClientOUIdentifier:
+    Certificate: cacerts/localhost-7054-ca-org1.pem
+    OrganizationalUnitIdentifier: client
+  PeerOUIdentifier:
+    Certificate: cacerts/localhost-7054-ca-org1.pem
+    OrganizationalUnitIdentifier: peer
+  AdminOUIdentifier:
+    Certificate: cacerts/localhost-7054-ca-org1.pem
+    OrganizationalUnitIdentifier: admin
+  OrdererOUIdentifier:
+    Certificate: cacerts/localhost-7054-ca-org1.pem
+    OrganizationalUnitIdentifier: orderer' > ${PWD}/crypto-config/peerOrganizations/org1.example.com/msp/config.yaml
+	
+虽然网络中只有一个peer节点，但是我们需要注册三个用户:peer0,user1,org1admin，其中第一个是必需的，第二个是用于测试的，第三个为Admin用户，安装和实例化链码需要Admin用户的证书:
+fabric-ca-client register -u https://admin:adminpw@localhost:7054 --caname ca-org1 --id.name peer0 --id.secret peer0pw --id.type peer --id.attrs '"hf.Registrar.Roles=peer"' --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+fabric-ca-client register -u https://admin:adminpw@localhost:7054 --caname ca-org1 --id.name user1 --id.secret user1pw --id.type client --id.attrs '"hf.Registrar.Roles=client"' --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+fabric-ca-client register -u https://admin:adminpw@localhost:7054 --caname ca-org1 --id.name org1admin --id.secret org1adminpw --id.type admin --id.attrs '"hf.Registrar.Roles=admin"' --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+1.5 获取Peer节点证书文件
+节点注册完毕，获取他们的证书文件:
+创建子文件夹:
+mkdir -p crypto-config/peerOrganizations/org1.example.com/peers
+mkdir -p crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com
+
+获取证书文件:
+#MSP文件
+fabric-ca-client enroll -u https://peer0:peer0pw@localhost:7054 --caname ca-org1 -M ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp --csr.hosts peer0.org1.example.com --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+#TLS证书
+fabric-ca-client enroll -u https://peer0:peer0pw@localhost:7054 --caname ca-org1 -M ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls --enrollment.profile tls --csr.hosts peer0.org1.example.com --csr.hosts localhost --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+
+拷贝节点分类配置文件:
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/msp/config.yaml ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/config.yaml
+
+修改证书以及秘钥文件，方便之后使用:
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/signcerts/* ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+
+将TLS相关证书复制一份:
+mkdir ${PWD}/crypto-config/peerOrganizations/org1.example.com/msp/tlscacerts
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/peerOrganizations/org1.example.com/msp/tlscacerts/ca.crt
+
+mkdir ${PWD}/crypto-config/peerOrganizations/org1.example.com/tlsca
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/tlscacerts/* ${PWD}/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+mkdir ${PWD}/crypto-config/peerOrganizations/org1.example.com/ca
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/cacerts/* ${PWD}/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+
+获取user与Admin用户证书文件:
+#创建子文件夹
+mkdir -p crypto-config/peerOrganizations/org1.example.com/users
+mkdir -p crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com
+mkdir -p crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com
+#获取证书文件
+fabric-ca-client enroll -u https://user1:user1pw@localhost:7054 --caname ca-org1 -M ${PWD}/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+fabric-ca-client enroll -u https://org1admin:org1adminpw@localhost:7054 --caname ca-org1 -M ${PWD}/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp --tls.certfiles ${PWD}/ca/org1/tls-cert.pem
+cp ${PWD}/crypto-config/peerOrganizations/org1.example.com/msp/config.yaml ${PWD}/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/config.yaml
+
+1.6 启动网络之前的准备
+到这里我们已经生成了所有需要的证书文件，接下来是生成用于启动网络的创世区块,生成创世区块需要一个文件configtx.yaml,直接复制过来:
+
+将该文件保存到指定位置，接下来生成创世区块:
+export FABRIC_CFG_PATH=$PWD
+configtxgen -profile SampleMultiNodeEtcdRaft -channelID byfn-sys-channel -outputBlock ./channel-artifacts/genesis.block
+# 生成通道配置文件
+export CHANNEL_NAME=mychannel
+configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/mychannel.tx -channelID $CHANNEL_NAME
+
+1.7 启动网络
+首先写包含所有节点的Docker文件,这里直接贴出来:
+
+1.8 简单测试
+先进行第一部分的测试，看一下创建通道，加入通道是否成功:
+#进入CLI容器
+docker exec -it cli bash
+#配置环境变量
+export CHANNEL_NAME=mychannel
+export ORDERER_CA=${PWD}/crypto/orderOrganization/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export PEER0_ORG1_CA=${PWD}/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+
+创建通道:
+peer channel create -o orderer1.example.com:7050 -c $CHANNEL_NAME -f ./channel-artifacts/mychannel.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA --outputBlock ./channel-artifacts/${CHANNEL_NAME}.block
+加入通道:
+peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block
+
+2 动态添加Raft节点
+主要步骤如下：
+
+为该节点生成证书文件
+获取当前网络的配置文件
+将证书文件添加到配置文件中
+更新配置文件
+启动新的Orderer节点
+2.1 生成证书文件
+2.1.1 注册该节点身份
+fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer5 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+
+为该节点创建存储证书的文件夹:
+mkdir -p crypto-config/orderOrganization/example.com/orderers/orderer5.example.com
+2.1.2 获取该节点证书
+#MSP
+fabric-ca-client enroll -u https://orderer5:ordererpw@localhost:9054 --caname ca-orderer -M ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/msp --csr.hosts orderer5.example.com --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+#TLS
+fabric-ca-client enroll -u https://orderer5:ordererpw@localhost:9054 --caname ca-orderer -M ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls --enrollment.profile tls --csr.hosts orderer5.example.com --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+复制节点分类配置文件:
+cp ${PWD}/crypto-config/orderOrganization/example.com/msp/config.yaml ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/msp/config.yaml
+修改证书与秘钥文件名称:
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/ca.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/signcerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/server.crt
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/keystore/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/server.key
+
+创建文件夹并拷贝TLS证书文件:
+mkdir ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/msp/tlscacerts
+cp ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/tls/tlscacerts/* ${PWD}/crypto-config/orderOrganization/example.com/orderers/orderer5.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+2.2 获取网络配置文件
+将节点添加进网络，首先需要将该节点添加到系统通道内，所以先获取系统通道的配置文件:
+进入cli容器:
+docker exec -it cli bash
+配置环境变量，需要使用Orderer节点的身份信息:
+export CORE_PEER_LOCALMSPID="OrdererMSP"
+export ORDERER_CA=${PWD}/crypto/orderOrganization/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/crypto/ordererOrganization/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/orderOrganization/example.com/users/Admin@example.com/msp
+export CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+
+获取系统通道配置文件:
+peer channel fetch config channel-artifacts/config_block.pb -o orderer1.example.com:7050 -c byfn-sys-channel --tls --cafile $ORDERER_CA
+解码该配置文件:
+configtxlator proto_decode --input channel-artifacts/config_block.pb --type common.Block | jq .data.data[0].payload.data.config > channel-artifacts/config.json
+
+2.3将证书文件添加到配置文件中
+退出容器，可以在channel-artifacts文件内找到config.json文件。将该文件复制一份并在channel-artifacts文件夹下保存为update_config.json,使用编辑工具打开，并搜索.example.com字段如下：
+字段一部分：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,37 @@
+
+1.启动orderer节点失败
+启动完成后可以查看每个节点的日志,
+#docker logs orderer1.example.com
+失败信息如下:
+Failed to setup local msp with config: administrators must be declared when no admin ou classification is set
+panic: Failed to setup local msp with config: administrators must be declared when no admin ou classification is set
+
+2.root@bj-134:~/go/src/github.com/hyperledger/fab# fabric-ca-client enroll -u https://admin:adminpw@localhost:9054 --caname ca-orderer --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+2020/10/28 11:11:52 [INFO] TLS Enabled
+2020/10/28 11:11:52 [INFO] generating key: &{A:ecdsa S:256}
+2020/10/28 11:11:52 [INFO] encoded CSR
+Error: POST failure of request: POST https://localhost:9054/enroll
+{"hosts":["bj-134"],"certificate_request":"-----BEGIN CERTIFICATE REQUEST-----\nMIIBPDCB4wIBADBdMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xp\nbmExFDASBgNVBAoTC0h5cGVybGVkZ2VyMQ8wDQYDVQQLEwZGYWJyaWMxDjAMBgNV\nBAMTBWFkbWluMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7Vq2Lpo0fu2G3DQv\nfxgGFBVu52EJ3NVYl7sumqF782yWE4eqqvr9g3oGyc9vUhaoJIomsPEJmpB44Owb\nNR28GaAkMCIGCSqGSIb3DQEJDjEVMBMwEQYDVR0RBAowCIIGYmotMTM0MAoGCCqG\nSM49BAMCA0gAMEUCIQCutjcUGm3XNkdlIVINZQlXHk+U8czCwxP9xOjzVWmj/QIg\nSWV78mzXJJHQ/Po5l0FZY8kgHFsrOKaSMa/IhGRSVRs=\n-----END CERTIFICATE REQUEST-----\n","profile":"","crl_override":"","label":"","NotBefore":"0001-01-01T00:00:00Z","NotAfter":"0001-01-01T00:00:00Z","CAName":"ca-orderer"}: Post https://localhost:9054/enroll: dial tcp [::1]:9054: connect: connection refused
+解决办法：重新部署一遍结束，
+
+3.问题：检测部署raft节点的时候，遇到的问题没有，配置环境变量上来就，执行命令：
+root@bj-134:~/go/src/github.com/hyperledger/fab-v2# fabric-ca-client register -u https://admin:adminpw@localhost:9054 --caname ca-orderer --id.name orderer5 --id.secret ordererpw --id.type orderer --id.attrs '"hf.Registrar.Roles=orderer"' --tls.certfiles ${PWD}/ca/server/tls-cert.pem
+2020/10/28 16:37:00 [INFO] Configuration file location: /root/.fabric-ca-client/fabric-ca-client-config.yaml
+2020/10/28 16:37:00 [INFO] TLS Enabled
+2020/10/28 16:37:00 [INFO] TLS Enabled
+Error: Response from server: Error Code: 20 - Authentication failure
+解决办法：先执行export FABRIC_CA_CLIENT_HOME=${PWD}/crypto-config/orderOrganization/example.com
+
+4.Failed validating bootstrap block: initializing channelconfig failed: could not create channel Orderer sub-group config: 
+setting up the MSP manager failed: administrators must be declared when no admin ou classification is set
+panic: Failed validating bootstrap block: initializing channelconfig failed: could not create channel Orderer sub-group config: 
+setting up the MSP manager failed: administrators must be declared when no admin ou classification is set
+
+panic: Failed validating bootstrap block: initializing channelconfig failed: could not create channel Orderer sub-group config: 
+setting up the MSP manager failed: CA Certificate did not have the CA attribute, (SN: f8adffbd6a2debed01cd2840f1f75cd77bfdc9c)
+
+
+验证引导程序块失败：初始化channelconfig失败：无法创建频道订购者子组配置：
+设置MSP管理器失败：未设置管理员分类时必须声明管理员
+紧急情况：验证引导程序块失败：初始化channelconfig失败：无法创建渠道订购者子组配置：
+设置MSP管理器失败：未设置管理或分类时必须声明管理员
